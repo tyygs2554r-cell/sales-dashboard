@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard — Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9f8f6; color: #1a1a1a; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; padding-bottom: 6rem; }
+        header { margin-bottom: 2rem; border-bottom: 1px solid #e0ddd8; padding-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 22px; font-weight: 600; }
+        .badge { background: #fef9c3; color: #854d0e; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid #fde68a; }
+        .card { background: white; border: 1px solid #e0ddd8; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 1rem; color: #1a1a1a; }
+        .file-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+        .file-label { display: block; padding: 12px; border: 2px dashed #e0ddd8; border-radius: 6px; text-align: center; cursor: pointer; background: #fafaf9; font-size: 13px; font-weight: 500; color: #666; transition: all 0.2s; }
+        .file-label:hover { border-color: #1a1a1a; }
+        .file-label.filled { background: #f0f9ff; border-color: #5b9bd5; color: #1a6fa8; }
+        input[type="file"] { display: none; }
+        .btn-row { display: flex; gap: 8px; }
+        .btn { padding: 10px 20px; border: 1px solid #e0ddd8; background: white; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn:hover { background: #f9f8f6; border-color: #1a1a1a; }
+        .btn.primary { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+        .btn.primary:hover { background: #333; }
+        .btn.green { background: #16a34a; color: white; border-color: #16a34a; }
+        .btn.green:hover { background: #15803d; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { font-size: 12px; padding: 8px 12px; border-radius: 4px; margin-top: 0.75rem; }
+        .status.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .status.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .status.info { background: #f0f9ff; color: #0c4a6e; border: 1px solid #bae6fd; }
+        .igroup { margin-bottom: 1rem; }
+        .ilabel { display: block; font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        input[type="text"], textarea { width: 100%; padding: 9px 12px; border: 1px solid #e0ddd8; border-radius: 6px; font-size: 14px; font-family: inherit; background: white; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: #1a1a1a; }
+        textarea { resize: vertical; min-height: 100px; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .lead-item { padding: 10px 0; border-bottom: 1px solid #e0ddd8; display: flex; justify-content: space-between; align-items: center; }
+        .lead-item:last-child { border-bottom: none; }
+        .lead-name { font-weight: 600; font-size: 13px; }
+        .lead-sub { font-size: 12px; color: #999; }
+        .del-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0 4px; }
+        .del-btn:hover { color: #991b1b; }
+        .empty { color: #999; font-size: 13px; padding: 0.5rem 0; }
+        .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e0ddd8; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; gap: 12px; z-index: 100; }
+        .save-bar-text { font-size: 13px; color: #666; }
+        .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 700px) { .file-grid, .two { grid-template-columns: 1fr; } .container { padding: 1rem; padding-bottom: 6rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🔒 Sales Dashboard — Admin</h1>
+        <span class="badge">Private — do not share this link</span>
+    </header>
+
+    <div class="card">
+        <div class="card-title">📊 Import Weekly Reports from NetSuite</div>
+        <div class="file-grid">
+            <div>
+                <label class="file-label" id="lblPipeline" for="filePipeline">📁 Pipeline Report (.xls)</label>
+                <input type="file" id="filePipeline" accept=".xls,.xlsx,.csv">
+            </div>
+            <div>
+                <label class="file-label" id="lblDeals" for="fileDeals">📁 Deals Won Report (.xls)</label>
+                <input type="file" id="fileDeals" accept=".xls,.xlsx,.csv">
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn primary" id="btnImport" onclick="importFiles()">Import Files</button>
+        </div>
+        <div id="importStatus"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🔍 New Leads This Week</div>
+        <div class="igroup"><label class="ilabel">Lead name or company</label><input type="text" id="iName" placeholder="e.g. ABC Manufacturing, John Smith at XYZ Corp"></div>
+        <div class="igroup"><label class="ilabel">Industry / sector</label><input type="text" id="iIndustry" placeholder="e.g. Manufacturing, Non-profit, Retail"></div>
+        <div class="igroup"><label class="ilabel">How they came in</label><input type="text" id="iSource" placeholder="e.g. Referral from John D., Cold outreach, Inbound"></div>
+        <div class="igroup"><label class="ilabel">Estimated size / value</label><input type="text" id="iValue" placeholder="e.g. 250 KW, $500K opportunity"></div>
+        <button class="btn primary" onclick="addLead()">Add Lead</button>
+        <div id="leadsOut" style="margin-top:1rem"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📋 This Week's Priorities</div>
+        <div class="igroup">
+            <label class="ilabel">What are you working on this week? (one per line)</label>
+            <textarea id="iPriorities" placeholder="Follow up with Airbus Grand Prairie on proposal&#10;Send quote to Houston Principal Jamatkhana&#10;Meet with Starlink team"></textarea>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📈 Activity Metrics This Week</div>
+        <div class="two">
+            <div class="igroup"><label class="ilabel">Calls / meetings completed</label><input type="text" id="iCalls" placeholder="e.g. 12"></div>
+            <div class="igroup"><label class="ilabel">Proposals sent</label><input type="text" id="iProposals" placeholder="e.g. 3"></div>
+        </div>
+        <div class="two">
+            <div class="igroup"><label class="ilabel">Follow-ups scheduled</label><input type="text" id="iFollowups" placeholder="e.g. 5"></div>
+            <div class="igroup"><label class="ilabel">Deals advanced to next stage</label><input type="text" id="iAdvanced" placeholder="e.g. 2"></div>
+        </div>
+    </div>
+</div>
+
+<div class="save-bar">
+    <span class="save-bar-text" id="saveBarText">Import files and fill in details, then publish.</span>
+    <div style="display:flex;gap:8px">
+        <button class="btn" onclick="clearWeekly()">Clear Weekly Data</button>
+        <button class="btn green" id="btnPublish" onclick="publishDashboard()">🚀 Publish Dashboard</button>
+    </div>
+</div>
+
+<script>
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-j3mS2AsxMrAskYN3mydzNGxk7QnqjXiEAgNB5jB7o7VgerfwwuXWYU3vm-vq890JQg/exec';
+var STAGES = ['In Discussion','Preparing Quote','Had Meeting','In Negotiation'];
+var SKIP = ['Total','Status','Prospect','Big Sun','Parent','Custom'];
+var DB = { pipeline: {}, won: {}, leads: [], priorities: '', metrics: {} };
+
+function init() {
+    var saved = localStorage.getItem('adminDB');
+    if (saved) {
+        try {
+            DB = JSON.parse(saved);
+            renderLeads();
+            if (DB.priorities) document.getElementById('iPriorities').value = DB.priorities;
+            if (DB.metrics) {
+                if (DB.metrics.calls) document.getElementById('iCalls').value = DB.metrics.calls;
+                if (DB.metrics.proposals) document.getElementById('iProposals').value = DB.metrics.proposals;
+                if (DB.metrics.followups) document.getElementById('iFollowups').value = DB.metrics.followups;
+                if (DB.metrics.advanced) document.getElementById('iAdvanced').value = DB.metrics.advanced;
+            }
+        } catch(e) {}
+    }
+}
+
+document.getElementById('filePipeline').onchange = function() {
+    if (this.files[0]) { document.getElementById('lblPipeline').textContent = '✓ ' + this.files[0].name; document.getElementById('lblPipeline').classList.add('filled'); }
+};
+document.getElementById('fileDeals').onchange = function() {
+    if (this.files[0]) { document.getElementById('lblDeals').textContent = '✓ ' + this.files[0].name; document.getElementById('lblDeals').classList.add('filled'); }
+};
+
+function setStatus(msg, type) {
+    var el = document.getElementById('importStatus');
+    el.textContent = msg;
+    el.className = 'status ' + type;
+}
+
+function importFiles() {
+    var pf = document.getElementById('filePipeline').files[0];
+    var df = document.getElementById('fileDeals').files[0];
+    if (!pf && !df) { setStatus('Please select at least one file', 'error'); return; }
+    var btn = document.getElementById('btnImport');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-radius:50%;border-top-color:#fff;animation:spin 0.8s linear infinite"></span> Importing...';
+    setStatus('Reading files...', 'info');
+    Promise.all([
+        pf ? readXML(pf) : Promise.resolve(null),
+        df ? readXML(df) : Promise.resolve(null)
+    ]).then(function(results) {
+        if (results[0]) parsePipeline(results[0]);
+        if (results[1]) parseDeals(results[1]);
+        saveLocal();
+        setStatus('✅ Files imported! Click "Publish Dashboard" to go live.', 'success');
+        btn.disabled = false;
+        btn.textContent = 'Import Files';
+    }).catch(function(err) {
+        setStatus('❌ Error: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Import Files';
+    });
+}
+
+function readXML(file) {
+    return new Promise(function(resolve, reject) {
+        var r = new FileReader();
+        r.onload = function(e) {
+            try {
+                var raw = e.target.result;
+                var cleaned = raw.replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, '&amp;');
+                var doc = (new DOMParser()).parseFromString(cleaned, 'text/xml');
+                if (doc.getElementsByTagName('parsererror').length) throw new Error('XML parse failed');
+                var rows = doc.getElementsByTagName('Row');
+                var data = [];
+                for (var i = 0; i < rows.length; i++) {
+                    var cells = rows[i].getElementsByTagName('Cell');
+                    var row = [];
+                    for (var j = 0; j < cells.length; j++) {
+                        var d = cells[j].getElementsByTagName('Data')[0];
+                        row.push(d ? d.textContent : '');
+                    }
+                    while (row.length < 9) row.push('');
+                    data.push(row);
+                }
+                resolve(data);
+            } catch(err) { reject(err); }
+        };
+        r.onerror = function() { reject(new Error('File read failed')); };
+        r.readAsText(file);
+    });
+}
+
+function parsePipeline(rows) {
+    DB.pipeline = {};
+    STAGES.forEach(function(s) { DB.pipeline[s] = { weighted:0, projected:0, count:0, kw:0, no_value:0, no_kw:0, deals:[] }; });
+    var currentStage = null;
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var c0 = row[0].trim();
+        var c1 = row[1].trim();
+        var c4 = parseFloat(row[4]) || 0;
+        var c5 = parseFloat(row[5]) || 0;
+        var c6 = parseFloat(row[6]) || 0;
+        for (var k = 0; k < STAGES.length; k++) {
+            if (c0.indexOf(STAGES[k]) !== -1) { currentStage = STAGES[k]; break; }
+        }
+        var skip = false;
+        for (var s = 0; s < SKIP.length; s++) {
+            if (c0.indexOf(SKIP[s]) === 0) { skip = true; break; }
+        }
+        if (skip) continue;
+        if (c0 !== '' && c1 === '') continue;
+        if (currentStage && c1) {
+            DB.pipeline[currentStage].weighted += c6;
+            DB.pipeline[currentStage].projected += c5;
+            DB.pipeline[currentStage].kw += c4;
+            DB.pipeline[currentStage].count++;
+            if (c5 === 0) DB.pipeline[currentStage].no_value++;
+            if (c4 === 0) DB.pipeline[currentStage].no_kw++;
+            DB.pipeline[currentStage].deals.push({ name: c1, weighted: c6, projected: c5, kw: c4 });
+        }
+    }
+}
+
+function parseDeals(rows) {
+    DB.won = { amount:0, kw:0, count:0, deals:[] };
+    var headerFound = false;
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (!headerFound) { if (row[5] === 'Status') headerFound = true; continue; }
+        var status = row[5].trim();
+        var title = row[2].trim();
+        var kw = parseFloat(row[7]) || 0;
+        var amount = parseFloat(row[8]) || 0;
+        if (status.indexOf('Closed Won') !== -1 && amount > 0 && title) {
+            DB.won.amount += amount;
+            DB.won.kw += kw;
+            DB.won.count++;
+            DB.won.deals.push({ name: title, amount: amount, kw: kw });
+        }
+    }
+}
+
+function addLead() {
+    var name = document.getElementById('iName').value.trim();
+    if (!name) { alert('Please enter a name'); return; }
+    if (!DB.leads) DB.leads = [];
+    DB.leads.push({ name: name, industry: document.getElementById('iIndustry').value.trim(), source: document.getElementById('iSource').value.trim(), value: document.getElementById('iValue').value.trim() });
+    ['iName','iIndustry','iSource','iValue'].forEach(function(id) { document.getElementById(id).value = ''; });
+    saveLocal();
+    renderLeads();
+}
+
+function removeLead(i) {
+    DB.leads.splice(i, 1);
+    saveLocal();
+    renderLeads();
+}
+
+function renderLeads() {
+    var el = document.getElementById('leadsOut');
+    if (!DB.leads || !DB.leads.length) { el.innerHTML = '<p class="empty">No leads added yet</p>'; return; }
+    el.innerHTML = DB.leads.map(function(l, i) {
+        return '<div class="lead-item"><div><div class="lead-name">' + l.name + '</div><div class="lead-sub">' + [l.industry, l.source, l.value].filter(Boolean).join(' • ') + '</div></div><button class="del-btn" onclick="removeLead(' + i + ')">✕</button></div>';
+    }).join('');
+}
+
+function saveLocal() {
+    DB.priorities = document.getElementById('iPriorities').value.trim();
+    DB.metrics = { calls: document.getElementById('iCalls').value, proposals: document.getElementById('iProposals').value, followups: document.getElementById('iFollowups').value, advanced: document.getElementById('iAdvanced').value };
+    localStorage.setItem('adminDB', JSON.stringify(DB));
+}
+
+function publishDashboard() {
+    saveLocal();
+    var btn = document.getElementById('btnPublish');
+    var statusEl = document.getElementById('saveBarText');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Publishing...';
+    statusEl.textContent = 'Saving to Google...';
+
+    var payload = {
+        pipeline: DB.pipeline || {},
+        won: DB.won || {},
+        leads: DB.leads || [],
+        priorities: DB.priorities || '',
+        metrics: DB.metrics || {},
+        updatedAt: new Date().toLocaleString()
+    };
+
+    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(function(res) { return res.text(); })
+        .then(function() {
+            btn.disabled = false;
+            btn.textContent = '🚀 Publish Dashboard';
+            statusEl.textContent = '✅ Published at ' + new Date().toLocaleTimeString();
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.textContent = '🚀 Publish Dashboard';
+            statusEl.textContent = '❌ Failed: ' + err.message;
+        });
+}
+
+function clearWeekly() {
+    if (!confirm('Clear leads, priorities, and metrics? Pipeline data stays.')) return;
+    DB.leads = [];
+    DB.priorities = '';
+    DB.metrics = {};
+    document.getElementById('iPriorities').value = '';
+    document.getElementById('iCalls').value = '';
+    document.getElementById('iProposals').value = '';
+    document.getElementById('iFollowups').value = '';
+    document.getElementById('iAdvanced').value = '';
+    saveLocal();
+    renderLeads();
+}
+
+init();
+</script>
+</body>
+</html>
