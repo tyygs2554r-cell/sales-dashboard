@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Dashboard — Admin</title>
+    <title>Sales Dashboard - Admin</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9f8f6; color: #1a1a1a; line-height: 1.6; }
@@ -25,6 +25,8 @@
         .btn.primary:hover { background: #333; }
         .btn.green { background: #16a34a; color: white; border-color: #16a34a; }
         .btn.green:hover { background: #15803d; }
+        .btn.blue { background: #597cff; color: white; border-color: #597cff; }
+        .btn.blue:hover { background: #4a6de0; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .status { font-size: 12px; padding: 8px 12px; border-radius: 4px; margin-top: 0.75rem; }
         .status.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
@@ -36,18 +38,20 @@
         input[type="text"]:focus, textarea:focus { outline: none; border-color: #1a1a1a; }
         textarea { resize: vertical; min-height: 100px; }
         .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .lead-item { padding: 10px 0; border-bottom: 1px solid #e0ddd8; display: flex; justify-content: space-between; align-items: center; }
-        .lead-item:last-child { border-bottom: none; }
-        .lead-name { font-weight: 600; font-size: 13px; }
-        .lead-sub { font-size: 12px; color: #999; }
-        .del-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0 4px; }
+        .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        .list-item { padding: 10px 0; border-bottom: 1px solid #e0ddd8; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .list-item:last-child { border-bottom: none; }
+        .list-item-name { font-weight: 600; font-size: 13px; }
+        .list-item-sub { font-size: 12px; color: #999; margin-top: 2px; }
+        .del-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0 4px; flex-shrink: 0; }
         .del-btn:hover { color: #991b1b; }
         .empty { color: #999; font-size: 13px; padding: 0.5rem 0; }
+        .closing-card { border-left: 4px solid #597cff; }
         .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e0ddd8; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; gap: 12px; z-index: 100; }
         .save-bar-text { font-size: 13px; color: #666; }
         .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 700px) { .file-grid, .two { grid-template-columns: 1fr; } .container { padding: 1rem; padding-bottom: 6rem; } }
+        @media (max-width: 700px) { .file-grid, .two, .three { grid-template-columns: 1fr; } .container { padding: 1rem; padding-bottom: 6rem; } }
     </style>
 </head>
 <body>
@@ -75,11 +79,31 @@
         <div id="importStatus"></div>
     </div>
 
+    <div class="card closing-card">
+        <div class="card-title">🎯 Closing This Month</div>
+        <div class="three">
+            <div class="igroup">
+                <label class="ilabel">Deal name</label>
+                <input type="text" id="iClosingName" placeholder="e.g. South Park Mall">
+            </div>
+            <div class="igroup">
+                <label class="ilabel">Expected value</label>
+                <input type="text" id="iClosingValue" placeholder="e.g. $318K">
+            </div>
+            <div class="igroup">
+                <label class="ilabel">Status / note</label>
+                <input type="text" id="iClosingNote" placeholder="e.g. Contract being reviewed">
+            </div>
+        </div>
+        <button class="btn blue" onclick="addClosing()">Add Deal</button>
+        <div id="closingOut" style="margin-top:1rem"></div>
+    </div>
+
     <div class="card">
         <div class="card-title">🔍 New Leads This Week</div>
-        <div class="igroup"><label class="ilabel">Lead name or company</label><input type="text" id="iName" placeholder="e.g. ABC Manufacturing, John Smith at XYZ Corp"></div>
+        <div class="igroup"><label class="ilabel">Lead name or company</label><input type="text" id="iName" placeholder="e.g. ABC Manufacturing"></div>
         <div class="igroup"><label class="ilabel">Industry / sector</label><input type="text" id="iIndustry" placeholder="e.g. Manufacturing, Non-profit, Retail"></div>
-        <div class="igroup"><label class="ilabel">How they came in</label><input type="text" id="iSource" placeholder="e.g. Referral from John D., Cold outreach, Inbound"></div>
+        <div class="igroup"><label class="ilabel">How they came in</label><input type="text" id="iSource" placeholder="e.g. Referral from John D., Cold outreach"></div>
         <div class="igroup"><label class="ilabel">Estimated size / value</label><input type="text" id="iValue" placeholder="e.g. 250 KW, $500K opportunity"></div>
         <button class="btn primary" onclick="addLead()">Add Lead</button>
         <div id="leadsOut" style="margin-top:1rem"></div>
@@ -89,7 +113,7 @@
         <div class="card-title">📋 This Week's Priorities</div>
         <div class="igroup">
             <label class="ilabel">What are you working on this week? (one per line)</label>
-            <textarea id="iPriorities" placeholder="Follow up with Airbus Grand Prairie on proposal&#10;Send quote to Houston Principal Jamatkhana&#10;Meet with Starlink team"></textarea>
+            <textarea id="iPriorities" placeholder="Follow up with Airbus Grand Prairie&#10;Send quote to Houston Principal Jamatkhana&#10;Meet with Starlink team"></textarea>
         </div>
     </div>
 
@@ -118,7 +142,8 @@
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-j3mS2AsxMrAskYN3mydzNGxk7QnqjXiEAgNB5jB7o7VgerfwwuXWYU3vm-vq890JQg/exec';
 var STAGES = ['In Discussion','Preparing Quote','Had Meeting','In Negotiation'];
 var SKIP = ['Total','Status','Prospect','Big Sun','Parent','Custom'];
-var DB = { pipeline: {}, won: {}, leads: [], priorities: '', metrics: {} };
+var MEGA_THRESHOLD = 5000000;
+var DB = { pipeline:{}, won:{}, leads:[], closing:[], priorities:'', metrics:{} };
 
 function init() {
     var saved = localStorage.getItem('adminDB');
@@ -126,6 +151,7 @@ function init() {
         try {
             DB = JSON.parse(saved);
             renderLeads();
+            renderClosing();
             if (DB.priorities) document.getElementById('iPriorities').value = DB.priorities;
             if (DB.metrics) {
                 if (DB.metrics.calls) document.getElementById('iCalls').value = DB.metrics.calls;
@@ -156,7 +182,7 @@ function importFiles() {
     if (!pf && !df) { setStatus('Please select at least one file', 'error'); return; }
     var btn = document.getElementById('btnImport');
     btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-radius:50%;border-top-color:#fff;animation:spin 0.8s linear infinite"></span> Importing...';
+    btn.textContent = 'Importing...';
     setStatus('Reading files...', 'info');
     Promise.all([
         pf ? readXML(pf) : Promise.resolve(null),
@@ -206,7 +232,9 @@ function readXML(file) {
 
 function parsePipeline(rows) {
     DB.pipeline = {};
-    STAGES.forEach(function(s) { DB.pipeline[s] = { weighted:0, projected:0, count:0, kw:0, no_value:0, no_kw:0, deals:[] }; });
+    STAGES.forEach(function(s) {
+        DB.pipeline[s] = { weighted:0, projected:0, count:0, kw:0, no_value:0, no_kw:0, deals:[], mega_deals:[] };
+    });
     var currentStage = null;
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
@@ -225,13 +253,18 @@ function parsePipeline(rows) {
         if (skip) continue;
         if (c0 !== '' && c1 === '') continue;
         if (currentStage && c1) {
+            var deal = { name:c1, weighted:c6, projected:c5, kw:c4 };
+            if (c5 >= MEGA_THRESHOLD) {
+                DB.pipeline[currentStage].mega_deals.push(deal);
+            } else {
+                DB.pipeline[currentStage].deals.push(deal);
+            }
             DB.pipeline[currentStage].weighted += c6;
             DB.pipeline[currentStage].projected += c5;
             DB.pipeline[currentStage].kw += c4;
             DB.pipeline[currentStage].count++;
             if (c5 === 0) DB.pipeline[currentStage].no_value++;
             if (c4 === 0) DB.pipeline[currentStage].no_kw++;
-            DB.pipeline[currentStage].deals.push({ name: c1, weighted: c6, projected: c5, kw: c4 });
         }
     }
 }
@@ -247,41 +280,55 @@ function parseDeals(rows) {
         var kw = parseFloat(row[7]) || 0;
         var amount = parseFloat(row[8]) || 0;
         if (status.indexOf('Closed Won') !== -1 && amount > 0 && title) {
-            DB.won.amount += amount;
-            DB.won.kw += kw;
-            DB.won.count++;
-            DB.won.deals.push({ name: title, amount: amount, kw: kw });
+            DB.won.amount += amount; DB.won.kw += kw; DB.won.count++;
+            DB.won.deals.push({ name:title, amount:amount, kw:kw });
         }
     }
+}
+
+function addClosing() {
+    var name = document.getElementById('iClosingName').value.trim();
+    if (!name) { alert('Please enter a deal name'); return; }
+    if (!DB.closing) DB.closing = [];
+    DB.closing.push({ name:name, value:document.getElementById('iClosingValue').value.trim(), note:document.getElementById('iClosingNote').value.trim() });
+    document.getElementById('iClosingName').value = '';
+    document.getElementById('iClosingValue').value = '';
+    document.getElementById('iClosingNote').value = '';
+    saveLocal(); renderClosing();
+}
+
+function removeClosing(i) { DB.closing.splice(i,1); saveLocal(); renderClosing(); }
+
+function renderClosing() {
+    var el = document.getElementById('closingOut');
+    if (!DB.closing || !DB.closing.length) { el.innerHTML = '<p class="empty">No deals flagged yet</p>'; return; }
+    el.innerHTML = DB.closing.map(function(c,i) {
+        return '<div class="list-item"><div><div class="list-item-name">'+c.name+'</div><div class="list-item-sub">'+[c.value,c.note].filter(Boolean).join(' • ')+'</div></div><button class="del-btn" onclick="removeClosing('+i+')">✕</button></div>';
+    }).join('');
 }
 
 function addLead() {
     var name = document.getElementById('iName').value.trim();
     if (!name) { alert('Please enter a name'); return; }
     if (!DB.leads) DB.leads = [];
-    DB.leads.push({ name: name, industry: document.getElementById('iIndustry').value.trim(), source: document.getElementById('iSource').value.trim(), value: document.getElementById('iValue').value.trim() });
-    ['iName','iIndustry','iSource','iValue'].forEach(function(id) { document.getElementById(id).value = ''; });
-    saveLocal();
-    renderLeads();
+    DB.leads.push({ name:name, industry:document.getElementById('iIndustry').value.trim(), source:document.getElementById('iSource').value.trim(), value:document.getElementById('iValue').value.trim() });
+    ['iName','iIndustry','iSource','iValue'].forEach(function(id) { document.getElementById(id).value=''; });
+    saveLocal(); renderLeads();
 }
 
-function removeLead(i) {
-    DB.leads.splice(i, 1);
-    saveLocal();
-    renderLeads();
-}
+function removeLead(i) { DB.leads.splice(i,1); saveLocal(); renderLeads(); }
 
 function renderLeads() {
     var el = document.getElementById('leadsOut');
     if (!DB.leads || !DB.leads.length) { el.innerHTML = '<p class="empty">No leads added yet</p>'; return; }
-    el.innerHTML = DB.leads.map(function(l, i) {
-        return '<div class="lead-item"><div><div class="lead-name">' + l.name + '</div><div class="lead-sub">' + [l.industry, l.source, l.value].filter(Boolean).join(' • ') + '</div></div><button class="del-btn" onclick="removeLead(' + i + ')">✕</button></div>';
+    el.innerHTML = DB.leads.map(function(l,i) {
+        return '<div class="list-item"><div><div class="list-item-name">'+l.name+'</div><div class="list-item-sub">'+[l.industry,l.source,l.value].filter(Boolean).join(' • ')+'</div></div><button class="del-btn" onclick="removeLead('+i+')">✕</button></div>';
     }).join('');
 }
 
 function saveLocal() {
     DB.priorities = document.getElementById('iPriorities').value.trim();
-    DB.metrics = { calls: document.getElementById('iCalls').value, proposals: document.getElementById('iProposals').value, followups: document.getElementById('iFollowups').value, advanced: document.getElementById('iAdvanced').value };
+    DB.metrics = { calls:document.getElementById('iCalls').value, proposals:document.getElementById('iProposals').value, followups:document.getElementById('iFollowups').value, advanced:document.getElementById('iAdvanced').value };
     localStorage.setItem('adminDB', JSON.stringify(DB));
 }
 
@@ -292,42 +339,28 @@ function publishDashboard() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spin"></span> Publishing...';
     statusEl.textContent = 'Saving to Google...';
-
-    var payload = {
-        pipeline: DB.pipeline || {},
-        won: DB.won || {},
-        leads: DB.leads || [],
-        priorities: DB.priorities || '',
-        metrics: DB.metrics || {},
-        updatedAt: new Date().toLocaleString()
-    };
-
-    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+    var payload = { pipeline:DB.pipeline||{}, won:DB.won||{}, leads:DB.leads||[], closing:DB.closing||[], priorities:DB.priorities||'', metrics:DB.metrics||{}, updatedAt:new Date().toLocaleString() };
+    fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) })
         .then(function(res) { return res.text(); })
         .then(function() {
-            btn.disabled = false;
-            btn.textContent = '🚀 Publish Dashboard';
+            btn.disabled = false; btn.textContent = '🚀 Publish Dashboard';
             statusEl.textContent = '✅ Published at ' + new Date().toLocaleTimeString();
         })
         .catch(function(err) {
-            btn.disabled = false;
-            btn.textContent = '🚀 Publish Dashboard';
+            btn.disabled = false; btn.textContent = '🚀 Publish Dashboard';
             statusEl.textContent = '❌ Failed: ' + err.message;
         });
 }
 
 function clearWeekly() {
-    if (!confirm('Clear leads, priorities, and metrics? Pipeline data stays.')) return;
-    DB.leads = [];
-    DB.priorities = '';
-    DB.metrics = {};
+    if (!confirm('Clear leads, closing deals, priorities, and metrics? Pipeline data stays.')) return;
+    DB.leads = []; DB.closing = []; DB.priorities = ''; DB.metrics = {};
     document.getElementById('iPriorities').value = '';
     document.getElementById('iCalls').value = '';
     document.getElementById('iProposals').value = '';
     document.getElementById('iFollowups').value = '';
     document.getElementById('iAdvanced').value = '';
-    saveLocal();
-    renderLeads();
+    saveLocal(); renderLeads(); renderClosing();
 }
 
 init();
