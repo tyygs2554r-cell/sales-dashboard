@@ -118,8 +118,27 @@
         .spinner { width: 32px; height: 32px; border: 3px solid #f0ede8; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        @media (max-width: 860px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } .two-col { grid-template-columns: 1fr; } .m-grid { grid-template-columns: repeat(2,1fr); } .container { padding: 1rem; } }
-        @media (max-width: 500px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+        /* THERMOMETER */
+        .kpi-therm-wrapper { display: grid; grid-template-columns: 1fr 280px; gap: 2rem; align-items: start; margin-bottom: 0.5rem; }
+        .thermometer-container { display: flex; gap: 16px; align-items: flex-start; padding-top: 0.5rem; }
+        .therm-tube { position: relative; width: 80px; height: 280px; }
+        .therm-bg { position: absolute; top: 0; left: 20px; right: 20px; height: 240px; background: white; border: 1.5px solid #e8e5e0; border-radius: 40px; overflow: hidden; }
+        .therm-fill { position: absolute; bottom: 0; left: 20px; right: 20px; height: 0%; background: linear-gradient(to top, #f59e0b 0%, #f97316 50%, #597cff 100%); border-radius: 0 0 40px 40px; transition: height 0.6s ease; z-index: 2; }
+        .therm-marker-line { position: absolute; top: 50%; left: 10px; right: 10px; height: 1px; background: #e8e5e0; z-index: 1; }
+        .therm-bulb { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 56px; height: 56px; background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #597cff 100%); border-radius: 50%; border: 1.5px solid #e8e5e0; z-index: 5; }
+        .therm-current { position: absolute; left: 88px; display: flex; align-items: center; gap: 6px; z-index: 20; }
+        .therm-arrow { width: 0; height: 0; border-right: 8px solid #597cff; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+        .therm-label { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+        .therm-you-here { font-size: 11px; font-weight: 600; color: white; background: #597cff; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+        .therm-amount { font-size: 13px; font-weight: 500; color: #597cff; }
+        .therm-markers { position: relative; width: 140px; height: 280px; margin-top: 0; margin-left: 80px; }
+        .therm-marker { position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 8px; font-size: 12px; color: #bbb; }
+        .therm-marker-line-small { width: 8px; height: 0.5px; background: #e8e5e0; }
+        .therm-marker.highlight { color: #597cff; font-weight: 500; }
+        .therm-marker.highlight .therm-marker-line-small { width: 12px; height: 1.5px; background: #597cff; }
+
+        @media (max-width: 860px) { .kpi-grid { grid-template-columns: repeat(3,1fr); } .kpi-therm-wrapper { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr; } .m-grid { grid-template-columns: repeat(2,1fr); } .container { padding: 1rem; } }
+        @media (max-width: 500px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } .kpi-therm-wrapper { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -141,14 +160,38 @@
             <div class="updated" id="updatedAt"></div>
         </header>
 
-        <!-- KPIs -->
+        <!-- KPIs + THERMOMETER -->
         <div class="section-label">YTD Performance</div>
-        <div class="kpi-grid">
-            <div class="kpi blue"><div class="kpi-lbl">YTD Revenue Won</div><div class="kpi-val" id="kRevenue">$0</div><div class="kpi-sub" id="kDeals">0 deals closed</div></div>
-            <div class="kpi blue"><div class="kpi-lbl">System Size Won</div><div class="kpi-val" id="kKW">0 KW</div><div class="kpi-sub">Installed capacity</div></div>
-            <div class="kpi"><div class="kpi-lbl">Total Pipeline</div><div class="kpi-val" id="kPipeline">$0</div><div class="kpi-sub" id="kOpps">0 opportunities</div></div>
-            <div class="kpi"><div class="kpi-lbl">Weighted Pipeline</div><div class="kpi-val" id="kWeighted">$0</div><div class="kpi-sub">Probability-adjusted</div></div>
-            <div class="kpi"><div class="kpi-lbl">Total Pipeline KW</div><div class="kpi-val" id="kPipeKW">0 KW</div><div class="kpi-sub">Across all stages</div></div>
+        <div class="kpi-therm-wrapper">
+            <div class="kpi-grid">
+                <div class="kpi blue"><div class="kpi-lbl">YTD Revenue Won</div><div class="kpi-val" id="kRevenue">$0</div><div class="kpi-sub" id="kDeals">0 deals closed</div></div>
+                <div class="kpi blue"><div class="kpi-lbl">System Size Won</div><div class="kpi-val" id="kKW">0 KW</div><div class="kpi-sub">Installed capacity</div></div>
+                <div class="kpi"><div class="kpi-lbl">Total Pipeline</div><div class="kpi-val" id="kPipeline">$0</div><div class="kpi-sub" id="kOpps">0 opportunities</div></div>
+                <div class="kpi"><div class="kpi-lbl">Weighted Pipeline</div><div class="kpi-val" id="kWeighted">$0</div><div class="kpi-sub">Probability-adjusted</div></div>
+                <div class="kpi"><div class="kpi-lbl">Total Pipeline KW</div><div class="kpi-val" id="kPipeKW">0 KW</div><div class="kpi-sub">Across all stages</div></div>
+            </div>
+            <div class="thermometer-container">
+                <div class="therm-tube">
+                    <div class="therm-bg"></div>
+                    <div class="therm-fill" id="thermFill"></div>
+                    <div class="therm-marker-line"></div>
+                    <div class="therm-bulb"></div>
+                    <div class="therm-current" id="thermCurrent" style="top: 50%;">
+                        <div class="therm-arrow"></div>
+                        <div class="therm-label">
+                            <div class="therm-you-here">YOU ARE HERE</div>
+                            <div class="therm-amount" id="thermAmount">$0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="therm-markers">
+                    <div class="therm-marker" style="bottom: 0;"><div class="therm-marker-line-small"></div><span>$0</span></div>
+                    <div class="therm-marker" style="bottom: 60px;"><div class="therm-marker-line-small"></div><span>$4.4M</span></div>
+                    <div class="therm-marker highlight" style="bottom: 120px;"><div class="therm-marker-line-small"></div><span>$8.8M 🌵</span></div>
+                    <div class="therm-marker" style="bottom: 180px;"><div class="therm-marker-line-small"></div><span>$13.2M</span></div>
+                    <div class="therm-marker highlight" style="bottom: 240px;"><div class="therm-marker-line-small"></div><span>$17.6M 🏆</span></div>
+                </div>
+            </div>
         </div>
 
         <!-- ALERT -->
@@ -248,6 +291,14 @@ function render(data) {
     document.getElementById('kWeighted').textContent = fmt(totalW);
     document.getElementById('kOpps').textContent = totalC+' opportunities';
     document.getElementById('kPipeKW').textContent = fmtKW(totalKW);
+
+    // Thermometer
+    var annualGoal = 17643298;
+    var currentAmount = won.amount || 0;
+    var fillPercent = Math.min((currentAmount / annualGoal) * 100, 100);
+    document.getElementById('thermFill').style.height = fillPercent + '%';
+    document.getElementById('thermAmount').textContent = fmt(currentAmount);
+    document.getElementById('thermCurrent').style.top = (100 - fillPercent) * 2.4 + 'px';
 
     // Alert
     if (totalNoVal>0||totalNoKW>0) {
